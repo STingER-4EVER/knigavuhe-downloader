@@ -4,13 +4,19 @@ namespace Knigavuhe;
 
 class Console
 {
-    protected static $vars = [];
+    /**
+     * @var array
+     */
+    protected static array $vars = [];
 
-    protected static $variants = [
+    /**
+     * @var string[]
+     */
+    protected static array $variants = [
         '--', '-', ''
     ];
 
-    public static function init()
+    public static function init() : void
     {
         self::parse();
     }
@@ -19,7 +25,7 @@ class Console
      * @param int|string $name
      * @param null|mixed $default
      * @param null|string $castToType
-     * @return mixed|null
+     * @return mixed
      */
     public static function get( $name, $default = null, $castToType = null )
     {
@@ -36,7 +42,10 @@ class Console
         return $output;
     }
 
-    protected static function parse()
+    /**
+     *
+     */
+    protected static function parse() : void
     {
         $argv = isset( $_SERVER[ 'argv' ] ) ? $_SERVER[ 'argv' ] : [];
 
@@ -60,17 +69,17 @@ class Console
     }
 
     /**
-     * @param $argv
-     * @param $index
+     * @param array $argv
+     * @param int $index
      * @param int $offset
      */
-    protected static function parseArguments( &$argv, &$index, $offset = 0 )
+    protected static function parseArguments( array $argv, int $index, int $offset = 0 ) : void
     {
         $key   = $argv[ $index ];
         $value = true;
 
         if ( strpos( $argv[ $index ], '=' ) !== false ) {
-            list( $key, $value ) = explode( '=', $argv[ $index ], 2 );
+            [ $key, $value ] = explode( '=', $argv[ $index ], 2 );
         } else {
             if ( $offset !== 0 && isset( $argv[ $index + 1 ] ) && strncmp( $argv[ $index + 1 ], '-', 1 ) !== 0 ) {
                 $value = $argv[ ++$index ];
@@ -84,7 +93,12 @@ class Console
         }
     }
 
-    public static function waitUserInput( $message, $options = [] )
+    /**
+     * @param string $message
+     * @param array $options
+     * @return string
+     */
+    public static function waitUserInput( string $message, array $options = [] ) : string
     {
         if ( !empty( $options ) ) {
             $message .= ' [' . implode( '/', $options ) . '] : ';
@@ -99,7 +113,7 @@ class Console
                 break;
             }
 
-            if ( in_array( $answer, $options ) ) {
+            if ( in_array( $answer, $options, true ) ) {
                 break;
             }
         } while ( 1 );

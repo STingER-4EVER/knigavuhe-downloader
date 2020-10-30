@@ -6,19 +6,37 @@ class Download
 {
     protected $http_client;
 
-    protected $user_agent;
+    /**
+     * @var string
+     */
+    protected string $user_agent;
 
-    protected $error = [];
+    /**
+     * @var array
+     */
+    protected array $error = [];
 
-    protected $size = 0;
+    /**
+     * @var int
+     */
+    protected int $size = 0;
 
-    public function __construct( $http_client, $user_agent )
+    /**
+     * Download constructor.
+     * @param $http_client
+     * @param string $user_agent
+     */
+    public function __construct( $http_client, string $user_agent )
     {
         $this->http_client = $http_client;
         $this->user_agent = $user_agent;
     }
 
-    public function run( $file, $dist )
+    /**
+     * @param string $file
+     * @param string $dist
+     */
+    public function run( string $file, string $dist ) : void
     {
         $path = parse_url( $file, PHP_URL_PATH );
         $file_name = basename( $path );
@@ -37,28 +55,18 @@ class Download
         }
     }
 
-    public function getSize()
+    /**
+     * @return string
+     */
+    public function getSize() : string
     {
-        $size = $this->size;
-
-        foreach( [ 'b', 'Kb', 'Mb', 'Gb', 'Tb' ] as $label ) {
-            if ( $size === 1024 ) {
-                $size = 1 . ' ' . $label;
-                break;
-            }
-
-            if ( $size < 1024 ) {
-                $size = round( $size, 2 ) . ' ' . $label;
-                break;
-            }
-
-            $size /= 1024;
-        }
-
-        return $size;
+        return Utils::convertIntToByteSize( $this->size );
     }
 
-    public function getError()
+    /**
+     * @return array
+     */
+    public function getError() : array
     {
         return $this->error;
     }

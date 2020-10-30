@@ -4,10 +4,19 @@ namespace Knigavuhe;
 
 class Application
 {
+    /**
+     * @var string
+     */
     protected $book;
 
+    /**
+     * @var bool
+     */
     protected $is_non_interactive;
 
+    /**
+     * @var string
+     */
     protected $user_agent;
 
     public function __construct()
@@ -18,7 +27,7 @@ class Application
         $this->user_agent = Console::get( 'user-agent', DEFAULT_USER_AGENT, 'string' );
     }
 
-    public function run()
+    public function run() : void
     {
         if ( !$this->check( $error ) ) {
             $this->error( $error );
@@ -27,10 +36,16 @@ class Application
         }
 
         $start = time();
-        $http_client = new \GuzzleHttp\Client([ 'verify' => false ]);
-        $book = $this->parse( $http_client );
+        $http_client = new \GuzzleHttp\Client( [ 'verify' => false ] );
+
+        $page = $this->getPage( $http_client, sprintf( TARGET_URL, $this->book ) );
+        $book = $this->parse( $page );
 
         $this->infoStart( $book );
+
+        if ( $book->isIsBlocked() ) {
+            return;
+        }
 
         if ( !$this->is_non_interactive ) {
             if ( Console::waitUserInput( 'Continue?', [ 'Y', 'N' ] ) === 'N' ) {
@@ -43,7 +58,7 @@ class Application
         $this->infoEnd( $size, $start, time(), $error );
     }
 
-    public function help()
+    public function help() : void
     {
         $message = 'Usage: php app.php --book=... [OPTION]...' . "\n" .
                    'Download the required audiobook from knigavuhe.org, for offline listening.' . "\n" .
@@ -55,7 +70,11 @@ class Application
         echo $message;
     }
 
-    protected function check( &$error )
+    /**
+     * @param string $error
+     * @return string
+     */
+    protected function check( &$error ) : string
     {
         if ( $this->book === '' ) {
             $error = 'book\'s name is empty';
@@ -65,17 +84,30 @@ class Application
         return true;
     }
 
-    protected function error( $msg )
+    /**
+     * @param string $msg
+     */
+    protected function error( string $msg ) : void
     {
         echo 'Error: ' . $msg . "\n";
     }
 
-    protected function parse( $http_client )
+    /**
+     * @param string $html_page
+     * @return BookObject
+     */
+    protected function parse( string $html_page ) : BookObject
     {
-        return ( new Parser( $http_client, $this->user_agent ) )->get( sprintf( TARGET_URL, $this->book ) );
+        $book = ( new Parser() )->get( $html_page );
+        $book->setUrl( sprintf( TARGET_URL, $this->book ) );
+
+        return $book;
     }
 
-    protected function infoStart( BookObject $book )
+    /**
+     * @param BookObject $book
+     */
+    protected function infoStart( BookObject $book ) : void
     {
         echo 'Source: ' . $book->getUrl() . "\n";
         echo 'Author: ' . $book->getAuthor() . "\n";
@@ -83,9 +115,16 @@ class Application
         echo 'Reader: ' . $book->getReader() . "\n";
         echo 'Time: ' . $book->getTime() . "\n";
         echo 'Count files: ' . $book->getCountFiles() . "\n";
+        echo 'Status: ' . ( $book->isIsBlocked() ? 'blocked' : 'allowed' ) . "\n";
     }
 
-    protected function infoEnd( $size, $start, $end, $error )
+    /**
+     * @param int $size
+     * @param int $start
+     * @param int $end
+     * @param array $error
+     */
+    protected function infoEnd( int $size, int $start, int $end, array $error ) : void
     {
         echo 'Size: ' . $size . "\n";
         echo 'Time spent: ' . $this->convertTime( $start, $end ) . "\n";
@@ -98,6 +137,34 @@ class Application
         }
     }
 
+    /**
+     * @param $http_client
+     * @param string $url
+     * @return string
+     */
+    protected function getPage( $http_client, string $url ) : string
+    {
+        $response = $http_client->get( $url, [
+            'headers' => [
+                'User-Agent' => $this->user_agent,
+                'Accept-Encoding' => 'gzip'
+            ],
+            'decode_content' => 'gzip'
+        ] );
+
+        if ( $response->getStatusCode() === 200 ) {
+            return (string) $response->getBody();
+        }
+
+        return '';
+    }
+
+    /**
+     * @param $http_client
+     * @param BookObject $book
+     * @param $error
+     * @return int|string
+     */
     protected function download( $http_client, BookObject $book, &$error )
     {
         $dwn = new Download( $http_client, $this->user_agent );
@@ -125,29 +192,13 @@ class Application
         return $dwn->getSize();
     }
 
-    protected function convertTime( $start, $end )
+    /**
+     * @param int $start
+     * @param int $end
+     * @return string
+     */
+    protected function convertTime( int $start, int $end ) : string
     {
-        $work_time   = $end - $start;
-        $work_day    = (int) ( $work_time / ( 60 * 60 * 24 ) );
-        $work_hour   = (int) ( $work_time / ( 60 * 60 ) );
-        $work_minute = (int) ( $work_time / 60 );
-        $work_sec    = (int) ( $work_time % 60 );
-
-        $work_time_str = [];
-        if ( $work_day > 0 ) {
-            $work_time_str[] = $work_day . ' d';
-        }
-
-        if ( $work_hour > 0 ) {
-            $work_time_str[] = $work_hour . ' h';
-        }
-
-        if ( $work_minute > 0 ) {
-            $work_time_str[] = $work_minute . ' min';
-        }
-
-        $work_time_str[] = $work_sec . ' sec';
-
-        return implode( ' ', $work_time_str );
+        return Utils::convertTimeToHuman( $end - $start );
     }
 }

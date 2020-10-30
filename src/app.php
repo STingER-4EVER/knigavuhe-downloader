@@ -2,6 +2,7 @@
 
 // include files
 require_once __DIR__ . '/defines.php';
+require_once SRC . 'Utils.php';
 require_once SRC . 'Console.php';
 require_once SRC . 'Parser.php';
 require_once SRC . 'Application.php';

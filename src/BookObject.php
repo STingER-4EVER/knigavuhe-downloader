@@ -4,24 +4,26 @@ namespace Knigavuhe;
 
 class BookObject
 {
-    protected $url;
+    protected string $url;
 
-    protected $name;
+    protected string $name;
 
-    protected $author;
+    protected string $author;
 
-    protected $reader;
+    protected string $reader;
 
-    protected $time;
+    protected string $time;
 
-    protected $count_files;
+    protected int $count_files;
 
-    protected $files = [];
+    protected array $files = [];
+
+    protected bool $is_blocked = false;
 
     /**
      * @return string
      */
-    public function getUrl()
+    public function getUrl() : string
     {
         return $this->url;
     }
@@ -29,7 +31,7 @@ class BookObject
     /**
      * @param string $url
      */
-    public function setUrl( $url )
+    public function setUrl( $url ) : void
     {
         $this->url = $url;
     }
@@ -37,7 +39,7 @@ class BookObject
     /**
      * @return string
      */
-    public function getName()
+    public function getName() : string
     {
         return $this->name;
     }
@@ -45,7 +47,7 @@ class BookObject
     /**
      * @param string $name
      */
-    public function setName( $name )
+    public function setName( $name ) : void
     {
         $this->name = $name;
     }
@@ -53,7 +55,7 @@ class BookObject
     /**
      * @return string
      */
-    public function getAuthor()
+    public function getAuthor() : string
     {
         return $this->author;
     }
@@ -61,7 +63,7 @@ class BookObject
     /**
      * @param string $author
      */
-    public function setAuthor( $author )
+    public function setAuthor( $author ) : void
     {
         $this->author = $author;
     }
@@ -69,7 +71,7 @@ class BookObject
     /**
      * @return string
      */
-    public function getReader()
+    public function getReader() : string
     {
         return $this->reader;
     }
@@ -77,7 +79,7 @@ class BookObject
     /**
      * @param string $reader
      */
-    public function setReader( $reader )
+    public function setReader( $reader ) : void
     {
         $this->reader = $reader;
     }
@@ -85,7 +87,7 @@ class BookObject
     /**
      * @return string
      */
-    public function getTime()
+    public function getTime() : string
     {
         return $this->time;
     }
@@ -93,7 +95,7 @@ class BookObject
     /**
      * @param string $time
      */
-    public function setTime( $time )
+    public function setTime( $time ) : void
     {
         $this->time = $time;
     }
@@ -101,7 +103,7 @@ class BookObject
     /**
      * @return int
      */
-    public function getCountFiles()
+    public function getCountFiles() : int
     {
         return $this->count_files;
     }
@@ -109,7 +111,7 @@ class BookObject
     /**
      * @param int $count_files
      */
-    public function setCountFiles( $count_files )
+    public function setCountFiles( $count_files ) : void
     {
         $this->count_files = $count_files;
     }
@@ -117,7 +119,7 @@ class BookObject
     /**
      * @return array
      */
-    public function getFiles()
+    public function getFiles() : array
     {
         return $this->files;
     }
@@ -125,8 +127,24 @@ class BookObject
     /**
      * @param array $files
      */
-    public function setFiles( $files )
+    public function setFiles( $files ) : void
     {
         $this->files = $files;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isIsBlocked() : bool
+    {
+        return $this->is_blocked;
+    }
+
+    /**
+     * @param bool $is_blocked
+     */
+    public function setIsBlocked( bool $is_blocked ) : void
+    {
+        $this->is_blocked = $is_blocked;
     }
 }

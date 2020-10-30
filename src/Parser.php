@@ -2,85 +2,111 @@
 
 namespace Knigavuhe;
 
+use DiDom\Document;
+use Exception;
+
 class Parser
 {
-    protected $http_client;
-
-    protected $user_agent;
-
-    public function __construct( $http_client, $user_agent )
-    {
-        $this->http_client = $http_client;
-        $this->user_agent = $user_agent;
-    }
-
-    public function get( $url )
+    /**
+     * @param string $html_page
+     * @return BookObject
+     */
+    public function get( string $html_page ) : BookObject
     {
         $output = new BookObject();
-        $output->setUrl( $url );
-
-        $page = $this->getPage( $url );
-        if ( $page !== '' ) {
-            $document = new \DiDom\Document( $page );
+        if ( $html_page !== '' ) {
+            $document = new Document( $html_page );
             $output->setName( $this->getText( $document, '.book_title_name' ) );
-            $output->setAuthor( $this->getText( $document, 'span[itemprop="author"] > a' ) );
-            $output->setReader( $this->getText( $document, '.book_title_elem a[href*="/reader/"]' ) );
-            $output->setTime( $this->getTime( $document, '.book_cover_wrap .book_blue_block' ) );
+            $output->setAuthor( $this->getTexts( $document, 'span[itemprop="author"] a' ) );
+            $output->setReader( $this->getTexts( $document, '.book_title_elem a[href*="/reader/"]' ) );
+            $output->setTime( $this->getTime( $document, '.book_cover_wrap .book_blue_block > div' ) );
             $output->setCountFiles( $this->getCount( $document, '.book_playlist_item_name' ) );
-            $output->setFiles( $this->getFileList( $page ) );
+            $output->setFiles( $this->getFileList( $html_page ) );
+            $output->setIsBlocked( (bool) $this->getCount( $document, '.book_playlist button.book_buy' ) );
         }
 
         return $output;
     }
 
-    protected function getPage( $url )
+    /**
+     * @param Document $document
+     * @param string $selector
+     * @return string
+     */
+    protected function getText( Document $document, string $selector ) : string
     {
-        $response = $this->http_client->get( $url, [
-            'headers' => [
-                'User-Agent' => $this->user_agent,
-                'Accept-Encoding' => 'gzip'
-            ],
-            'decode_content' => 'gzip'
-        ] );
-
-        if ( $response->getStatusCode() === 200 ) {
-            return (string) $response->getBody();
-        }
+        try {
+            $node = $document->first( $selector );
+            if ( $node ) {
+                return trim( $node->text() );
+            }
+        } catch ( Exception $e ) {}
 
         return '';
     }
 
-    protected function getText( $document, $selector )
+    /**
+     * @param Document $document
+     * @param string $selector
+     * @return string
+     */
+    protected function getTexts( Document $document, string $selector ) : string
     {
-        $node = $document->first( $selector );
-        if ( $node ) {
-            return trim( $node->text() );
-        }
+        try {
+            $output = [];
+            $node_list = $document->find( $selector );
+            if ( !empty( $node_list ) ) {
+                foreach ( $node_list as $node ) {
+                    $output[] = trim( $node->text() );
+                }
+
+                return implode( ', ', $output );
+            }
+        } catch ( Exception $e ) {}
 
         return '';
     }
 
-    protected function getTime( $document, $selector )
+    /**
+     * @param Document $document
+     * @param string $selector
+     * @return string
+     */
+    protected function getTime( Document $document, string $selector ) : string
     {
-        $node = $document->first( $selector );
-        if ( $node ) {
-            return trim( $node->child( 2 )->text() );
-        }
+        try {
+            $node = $document->first( $selector );
+            if ( $node ) {
+                $time_element = $node->child( 2 );
+                return trim( $time_element !== null ? $time_element->text() : '' );
+            }
+        } catch ( Exception $e ) {}
 
         return '';
     }
 
-    protected function getCount( $document, $selector )
+    /**
+     * @param Document $document
+     * @param string $selector
+     * @return int
+     */
+    protected function getCount( Document $document, string $selector ) : int
     {
-        $node = $document->find( $selector );
-        if ( $node ) {
-            return count( $node );
-        }
+        try {
+            $node = $document->find( $selector );
+            if ( $node ) {
+                return count( $node );
+            }
+        } catch ( Exception $e ) {}
 
         return 0;
     }
 
-    protected function getFileList( $page )
+    /**
+     * @param string $page
+     * @return array
+     */
+    protected function getFileList( string $page ) : array
     {
         $output = [];
 
@@ -92,7 +118,10 @@ class Parser
         );
 
         if ( isset( $match[ 1 ][ 1 ] ) ) {
-            $output = json_decode( $match[ 1 ][ 1 ], true );
+            $json = @json_decode( $match[ 1 ][ 1 ], true );
+            if ( $json !== null && json_last_error() === 0 ) {
+                $output = $json;
+            }
         }
 
         return $output;

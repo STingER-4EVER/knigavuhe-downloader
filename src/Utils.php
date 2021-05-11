@@ -35,25 +35,34 @@ class Utils
      */
     public static function convertTimeToHuman( int $time ) : string
     {
-        $work_day    = (int) ( $time / ( 60 * 60 * 24 ) );
-        $work_hour   = (int) ( $time / ( 60 * 60 ) );
-        $work_minute = (int) ( $time / 60 );
-        $work_sec    = (int) ( $time % 60 );
-
         $work_time_str = [];
-        if ( $work_day > 0 ) {
-            $work_time_str[] = $work_day . ' d';
+        static $times = [
+            'day'  => 60 * 60 * 24,
+            'hour' => 60 * 60,
+            'min'  => 60
+        ];
+
+        if ( $time < 60 ) {
+            return $time . ' sec';
         }
 
-        if ( $work_hour > 0 ) {
-            $work_time_str[] = $work_hour . ' h';
+        foreach ( $times as $post_fix => $num ) {
+            if ( $time === 60 ) {
+                $work_time_str[] = '1 min';
+                $time = 0;
+                break;
+            }
+
+            $result = (int) ( $time / $num );
+            if ( $result > 0 ) {
+                $work_time_str[] = $result . ' ' . $post_fix;
+                $time -= ( $result * $num );
+            }
         }
 
-        if ( $work_minute > 0 ) {
-            $work_time_str[] = $work_minute . ' min';
+        if ( $time > 0 ) {
+            $work_time_str[] = $time . ' sec';
         }
-
-        $work_time_str[] = $work_sec . ' sec';
 
         return implode( ' ', $work_time_str );
     }

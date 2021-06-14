@@ -119,12 +119,12 @@ class Application
     }
 
     /**
-     * @param int $size
+     * @param string $size
      * @param int $start
      * @param int $end
      * @param array $error
      */
-    protected function infoEnd( int $size, int $start, int $end, array $error ) : void
+    protected function infoEnd( string $size, int $start, int $end, array $error ) : void
     {
         echo 'Size: ' . $size . "\n";
         echo 'Time spent: ' . $this->convertTime( $start, $end ) . "\n";
@@ -163,9 +163,9 @@ class Application
      * @param $http_client
      * @param BookObject $book
      * @param $error
-     * @return int|string
+     * @return string
      */
-    protected function download( $http_client, BookObject $book, &$error )
+    protected function download( $http_client, BookObject $book, &$error ) : string
     {
         $dwn = new Download( $http_client, $this->user_agent );
         $dist = DOWNLOAD . $book->getAuthor() . ' - ' . $book->getName() . ' [' . $book->getReader() . ']' . '/';

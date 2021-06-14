@@ -14,11 +14,6 @@ class Utils
         $label = $size_type[ 0 ];
 
         foreach( $size_type as $label ) {
-            if ( $size === 1024 ) {
-                $size = 1;
-                break;
-            }
-
             if ( $size < 1024 ) {
                 break;
             }

@@ -58,4 +58,63 @@ class UtilsTest extends PHPUnit\Framework\TestCase
             ],
         ];
     }
+
+    // ==============================================================
+
+    /**
+     * @param int $input
+     * @param string $expected
+     * @dataProvider provider_convertIntToByteSize
+     */
+    public function test_convertIntToByteSize( int $input, string $expected ) : void
+    {
+        $actual = \Knigavuhe\Utils::convertIntToByteSize( $input );
+        self::assertEquals( $expected, $actual );
+    }
+
+    public function provider_convertIntToByteSize() : array
+    {
+        return [
+            [
+                'input'    => 1,
+                'expected' => '1 b'
+            ],
+            [
+                'input'    => 10,
+                'expected' => '10 b'
+            ],
+            [
+                'input'    => 1024,
+                'expected' => '1 Kb'
+            ],
+            [
+                'input'    => 1280,
+                'expected' => '1.25 Kb'
+            ],
+            [
+                'input'    => 1048576,
+                'expected' => '1 Mb'
+            ],
+            [
+                'input'    => 1051034,
+                'expected' => '1 Mb'
+            ],
+            [
+                'input'    => 1518518,
+                'expected' => '1.45 Mb'
+            ],
+            [
+                'input'    => 2935114,
+                'expected' => '2.8 Mb'
+            ],
+            [
+                'input'    => 1581717814,
+                'expected' => '1.47 Gb'
+            ],
+            [
+                'input'    => 6413077211,
+                'expected' => '5.97 Gb'
+            ],
+        ];
+    }
 }

@@ -176,15 +176,43 @@ class Application
         }
 
         foreach ( $book->getFiles() as $i => $item ) {
-            $dwn->run( $item[ 'url' ], $dist );
+            $progress = static function ( $downloadTotal,
+                                          $downloadedBytes,
+                                          $uploadTotal,
+                                          $uploadedBytes ) use ( $i, $book ) {
 
-            if ( !$this->is_non_interactive ) {
+                static $last_percent = 0;
+                $count_num = strlen( (string) $book->getCountFiles() );
+                $percent = ( $downloadedBytes === 0 || $downloadTotal === 0 )
+                    ? 0
+                    : ( $downloadedBytes / $downloadTotal * 100 );
+
+                if ( $percent % 5 !== 0 || $last_percent === (int) $percent ) {
+                    return;
+                }
+                $last_percent = (int) $percent;
+
+                $pattern = 'Download: [% ' . $count_num . 's/%s] [%-10s] [% 3s%%] [% 9s/% 9s]';
+                $message = sprintf(
+                    $pattern,
+                    ( $i + 1 ),
+                    $book->getCountFiles(),
+                    str_repeat( '=', (int) ceil( $percent ? ( $percent / 10 ) : 0 ) ),
+                    (int) ceil( $percent ),
+                    $downloadedBytes ? Utils::convertIntToByteSize( $downloadedBytes, '' ) : '?',
+                    $downloadTotal ? Utils::convertIntToByteSize( $downloadTotal, '' ) : '?'
+                );
+
                 echo "\r";
-                echo 'Download: [' . ( $i + 1 ) . ' / ' . $book->getCountFiles() . ']';
-            }
+                echo $message;
+            };
+
+            $dwn->run( $item[ 'url' ], $dist, $this->is_non_interactive ? null : $progress );
         }
 
         if ( !$this->is_non_interactive ) {
+            echo "\r";
+            echo 'Download: [' . $book->getCountFiles() . ' / ' . $book->getCountFiles() . ']' . str_repeat( ' ', 50 );
             echo "\n";
         }
 

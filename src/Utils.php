@@ -6,9 +6,10 @@ class Utils
 {
     /**
      * @param int $size
+     * @param string $delimiter
      * @return string
      */
-    public static function convertIntToByteSize( int $size ) : string
+    public static function convertIntToByteSize( int $size, $delimiter = ' ' ) : string
     {
         static $size_type = [ 'b', 'Kb', 'Mb', 'Gb', 'Tb' ];
         $label = $size_type[ 0 ];
@@ -21,7 +22,7 @@ class Utils
             $size /= 1024;
         }
 
-        return round( $size, 2 )  . ' ' . $label;
+        return round( $size, 2 )  . $delimiter . $label;
     }
 
     /**

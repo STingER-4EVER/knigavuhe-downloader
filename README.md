@@ -63,7 +63,7 @@ If this is what you expect, agree with the download.
 
 The download process will start
 ```
-Download: [0 / 116]
+Download: [  0/116] [=====     ] [ 51%] [   2.32Mb/   29.5Mb]
 ```
 
 The audio book will be located in the `./download/{author} - {name}[{reader}]` folder

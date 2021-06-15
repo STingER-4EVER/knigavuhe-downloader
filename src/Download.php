@@ -35,18 +35,26 @@ class Download
     /**
      * @param string $file
      * @param string $dist
+     * @param callable|null $progress
      */
-    public function run( string $file, string $dist ) : void
+    public function run( string $file, string $dist, callable $progress = null ) : void
     {
         $path = parse_url( $file, PHP_URL_PATH );
         $file_name = basename( $path );
-        $mp3 = $this->http_client->get( $file, [
+
+        $options = [
             'headers'=> [
                 'User-Agent' => $this->user_agent,
                 'Accept-Encoding' => 'gzip'
             ],
             'decode_content' => 'gzip'
-        ] );
+        ];
+
+        if ( $progress !== null ) {
+            $options[ 'progress' ] = $progress;
+        }
+
+        $mp3 = $this->http_client->get( $file, $options );
 
         if ( $mp3->getStatusCode() === 200 ) {
             $this->size += @file_put_contents( $dist . $file_name, ( (string) $mp3->getBody() ) );

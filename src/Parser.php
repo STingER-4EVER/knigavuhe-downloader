@@ -117,8 +117,10 @@ class Parser
             PREG_SET_ORDER
         );
 
-        if ( isset( $match[ 1 ][ 1 ] ) ) {
-            $json = @json_decode( $match[ 1 ][ 1 ], true );
+        $json_book = $match[ 1 ][ 1 ] ?? $match[ 0 ][ 1 ];
+
+        if ( $json_book ) {
+            $json = @json_decode( $json_book, true );
             if ( $json !== null && json_last_error() === 0 ) {
                 $output = $json;
             }

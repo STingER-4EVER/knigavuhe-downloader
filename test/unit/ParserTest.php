@@ -63,4 +63,18 @@ class ParserTest extends PHPUnit\Framework\TestCase
         self::assertEquals( 18, $actual->getCountFiles() );
         self::assertEquals( false, $actual->isIsBlocked() );
     }
+
+    public function testGet_5() : void
+    {
+        $class = new Parser();
+        $html_page = file_get_contents( __DIR__ . '/../data/page-05.html' );
+        $actual = $class->get( $html_page );
+
+        self::assertEquals( '31:20:45', $actual->getTime() );
+        self::assertEquals( 'Чёрный дом', $actual->getName() );
+        self::assertEquals( 'Стивен Кинг, Питер Страуб', $actual->getAuthor() );
+        self::assertEquals( 'BIGBAG', $actual->getReader() );
+        self::assertEquals( 75, $actual->getCountFiles() );
+        self::assertEquals( false, $actual->isIsBlocked() );
+    }
 }
